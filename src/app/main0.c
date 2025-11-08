@@ -14,7 +14,6 @@ void main0 (void)
     systemInit();
     myPrintf("SYS START\n");
 
-
     // 사용자 인증 절차 실행(암호 기반 시동)
 //    authenticate();
 
