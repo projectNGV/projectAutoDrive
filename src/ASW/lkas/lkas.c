@@ -19,6 +19,13 @@ boolean g_lkasEnable;
 int steerBuffer[BUFFER_SIZE];
 int bufferLeft, bufferRight;
 
+
+////***********************************////
+extern MotorState motorState;
+boolean g_accEnable = false;
+
+////***********************************////
+
 void LKAS_UpdateSteerBuffer (int value)
 {
     if (g_lkasEnable)
@@ -44,6 +51,7 @@ void LKAS_Stop ()
 {
     myPrintf("LKAS STOP\n");
     g_lkasEnable = FALSE;
+    g_accEnable = false;
     unsigned char txData[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     canSendMsg(LKAS_START_CAN_ID, txData, 1);
     motorStop();
@@ -107,6 +115,51 @@ void LKAS_Main ()
         }
     }
 }
+
+
+void ACC_LKAS_Main(unsigned int distance){ // ACC + LKAS
+    int steer_mv = 0;
+    int currentDuty = motorState.currentDuty;
+
+    // ACC 속도 제어 로직 (Duty 조정)
+    if (distance < ACC_ACTIVATION_THRESHOLD) {
+        // 목표 거리보다 가까우면 감속
+        currentDuty -= ACC_BRAKE_DUTY_STEP;
+        if (currentDuty < ACC_MIN_SPEED)
+            currentDuty = ACC_MIN_SPEED; // 최소 속도 유지
+
+        // AEB 거리 (AEB_DISTANCE_MM)보다 가까워지면 FSM에서 처리됨
+    }
+    else if (currentDuty < ACC_TARGET_SPEED) {
+        // 전방이 충분히 멀면 증속 (LKAS_Main에서 FORWARD_SPEED가 ACC_TARGET_SPEED와 같다고 가정)
+        currentDuty += ACC_BRAKE_DUTY_STEP;
+        if (currentDuty > ACC_TARGET_SPEED)
+            currentDuty = ACC_TARGET_SPEED;
+    }
+
+    motorState.currentDuty = currentDuty; // 새로운 속도 저장
+
+    // 2. LKAS 조향 제어 로직
+    if (bufferLeft != bufferRight) {
+        int latestIdx = bufferRight - 1;
+        if (latestIdx < 0)
+            latestIdx += BUFFER_SIZE;
+
+        int latestRaw = steerBuffer[latestIdx];
+        bufferLeft = bufferRight; // 버퍼 리셋
+
+        steer_mv = (latestRaw * STEER_FACTOR) + STEER_OFFSET;
+        if (steer_mv < 20 && steer_mv > -20)
+            steer_mv = 0;
+    }
+
+    // 최종 모터 실행 (ACC 속도 + LKAS 조향 통합)
+    // 조향 값(steer_mv)을 현재 속도(currentDuty)에 적용
+    motorMovChAPwm(currentDuty - steer_mv, Forward); // 좌측 채널
+    motorMovChBPwm(currentDuty + steer_mv, Forward); // 우측 채널
+}
+
+
 
 
 //#include "lkas.h"

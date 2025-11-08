@@ -11,10 +11,10 @@ volatile bool buzzerFlag = TRUE;
 // 차량의 현재 상태를 저장하는 전역 변수 (초기 상태는 STATE_IDLE)
 VehicleState currentState = STATE_IDLE;
 
-#define TOF_TOLERANCE_MM 10 // ToF 값의 변경 허용 범위 (10mm 이내 변화 무시)
+
 extern volatile bool tofFlag;
 volatile bool obstacleDetectedFlag = false;
-volatile unsigned int g_prevTofValue = 0;
+
 
 /*********************************************************************************************************************/
 // 현재 상태에 따라 차량의 동작을 제어하는 상태 머신 처리 함수
@@ -38,57 +38,61 @@ void handleStateMachine (MotorState *motorState)
         {
             //myPrintf("tof: %d mm\n", distance);
             if (aebFlag == true) { // aeb 발동 -> lkas 전용 정지 상태
-                myPrintf("LKAS & motor stop\n");
                 LKAS_Stop();
                 performEmergencyStop();
                 //motorStopChA();
                 //motorStopChB();
+                myPrintf("****LKAS & motor stop\n");
 
                 currentState = STATE_LKAS_STOPPED;
-
-                //aebFlag = false;
                 stm0StartTimeout();
             }
-//            else if (motorState->lastKeyInput == 'l') {
-//                LKAS_Stop();
-//                currentState = STATE_LKAS_STOPPED;
-//            }
+
+            // ToF 거리가 멀면 ACC 끄고 고정 속도 주행, 가까우면 ACC 켜고 거리 유지
+            if (distance < ACC_DEACTIVATION_THRESHOLD) {
+                g_accEnable = TRUE;
+            }
+            else if (distance > ACC_ACTIVATION_THRESHOLD) {
+                g_accEnable = FALSE;
+            }
+
+            if (g_accEnable == TRUE) {
+                ACC_LKAS_Main(distance);
+            }
             else {
                 LKAS_Main();
             }
+
+
+////            else if (motorState->lastKeyInput == 'l') {
+////                LKAS_Stop();
+////                currentState = STATE_LKAS_STOPPED;
+////            }
+//            else {
+//                LKAS_Main();
+//            }
 
             break;
         }
 
         case STATE_LKAS_STOPPED:
         {
-            //aebFlag = false;
             if (obstacleDetectedFlag == true) { // 타임아웃 이벤트 발생
-                // ToF 값 변경 없음 확인 (직전 값과 비교 로직 필요)
-                if (abs(distance - g_prevTofValue) <= TOF_TOLERANCE_MM) {
-                    myPrintf("Obstacle confirmed. Initiating Lane Change.\n");
-                    currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 전이
-
-                    //obstacleDetectedFlag = false;
-                }
-                else {
-                    // 타임아웃은 되었으나, ToF 값이 변동함 (장애물이 움직임).
-                    // 타이머를 다시 시작하여 재측정
-                    myPrintf("Obstacle moved. Restarting timeout.\n");
-                    stm0StartTimeout();
-                }
+                myPrintf("---time out\nObstacle confirmed. Initiating Lane Change.\n");
+                currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 전이
             }
-            //obstacleDetectedFlag = false;
-
-            if (distance != 0) g_prevTofValue = distance;
 
             break;
         }
 
         case STATE_LANE_CHANGE:
         {
-            myPrintf("changing lane\n");
+            myPrintf("changing lane----------delay\n\n");
+
+            // 차선 변경 로직 짜야함
+            delayMs(5000);
             aebFlag = false;
+            obstacleDetectedFlag = false;
 
             currentState = STATE_LKAS;
             LKAS_Start();
