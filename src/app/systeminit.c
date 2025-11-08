@@ -11,4 +11,5 @@ void systemInit(){
     ledInit();
     gpt12Init();
     buzzerInit();
+    stm0InterruptInit();
 }

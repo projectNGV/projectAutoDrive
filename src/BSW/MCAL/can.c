@@ -32,21 +32,6 @@ void canTxIsrHandler (void)
 IFX_INTERRUPT(canRxIsrHandler, 0, ISR_PRIORITY_CAN_RX);
 void canRxIsrHandler (void)
 {
-//    unsigned int rxID;
-//    char rxData[8] = {0, };
-//    int rxLen;
-//    canRecvMsg(&rxID, rxData, &rxLen);
-//
-//    switch (rxID)
-//    {
-//        case CAN_TOF_ID :
-//            tofUpdateFromCAN(rxData);
-//            break;
-//        default :
-//            tofUpdateFromCAN(rxData);
-//            break;
-//    }
-
     unsigned int rxID;
     unsigned char rxData[8] = {0, };
     int rxLen;

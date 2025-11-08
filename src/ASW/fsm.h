@@ -10,7 +10,9 @@ typedef enum {
     STATE_MANUAL_DRIVE,
     STATE_EMERGENCY_STOP,
     STATE_AUTO_PARK,
-    STATE_LKAS
+    STATE_LKAS,
+    STATE_LKAS_STOPPED,   // LKAS 중 AEB로 정지된 상태
+    STATE_LANE_CHANGE
 } VehicleState;
 
 void handleStateMachine(MotorState* motorState);

@@ -9,11 +9,16 @@ MotorState motorState = {
         .lastKeyInput = 0  // 가장 마지막으로 입력된 키 (초기에는 정지)
 };
 
+extern volatile bool tofFlag;
+
 void main0 (void)
 {
     systemInit();
-    myPrintf("SYS START\n");
+    delayMs(1000);
+    myPrintf("\n\n\n\n\nSYS START\n");
 
+    motorState.lastKeyInput = 'l';
+    tofFlag = true;
 
     // 사용자 인증 절차 실행(암호 기반 시동)
 //    authenticate();

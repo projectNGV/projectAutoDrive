@@ -11,6 +11,7 @@
 #include "gpt12.h"
 #include "led.h"
 #include "buzzer.h"
+#include "stm.h"
 
 void systemInit(void);
 
