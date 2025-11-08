@@ -28,6 +28,8 @@
 #include "IfxCpu.h"
 #include "IfxScuWdt.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
 #include "main0.h"
 
 IFX_ALIGN(4) IfxCpu_syncEvent g_cpuSyncEvent = 0;
@@ -48,4 +50,20 @@ void core0_main(void)
     
     
     main0();
+}
+
+/* 메모리 부족 훅 함수 */
+void vApplicationMallocFailedHook(void)
+{
+    taskDISABLE_INTERRUPTS();
+    for (;;);
+}
+
+/* 스택 오버플로 훅 함수 */
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    (void)xTask;
+    (void)pcTaskName;
+    taskDISABLE_INTERRUPTS();
+    for (;;);
 }
