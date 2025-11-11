@@ -7,7 +7,7 @@
 
 #define FORWARD_SPEED 400 // LKAS 하면서 앞으로 가는 속도
 #define CONTROL_SPEED 0 // LKAS 하면서 앞으로 가는 속도
-#define BUFFER_SIZE 8
+#define BUFFER_SIZE 3
 
 #define STEER_FACTOR 2 // Steer 값 조절에 혹시 필요하면 쓰세요
 #define STEER_OFFSET -200 // CAN에서 오는 건 0~400 우리가 원하는 건 -200 ~ 200
@@ -85,7 +85,7 @@ void LKAS_Main (void)
                 delayMs(300);
                 motorMovChAPwm(0, Forward);
                 motorMovChBPwm(0, Forward);
-                delayMs(500);
+                delayMs(200);
             }
             else if (mv < 0)
             {
@@ -101,7 +101,7 @@ void LKAS_Main (void)
                 delayMs(300);
                 motorMovChAPwm(0, Forward);
                 motorMovChBPwm(0, Forward);
-                delayMs(500);
+                delayMs(200);
             }
             else
             {
@@ -110,7 +110,7 @@ void LKAS_Main (void)
                 delayMs(300);
                 motorMovChAPwm(0, Forward);
                 motorMovChBPwm(0, Forward);
-                delayMs(500);
+                delayMs(200);
             }
         }
     }
