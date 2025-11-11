@@ -17,7 +17,7 @@ void main0 (void)
     delayMs(1000);
     myPrintf("\n\n\n\n\nSYS START\n");
 
-    motorState.lastKeyInput = 'l';
+    //motorState.lastKeyInput = 'l';
     tofFlag = true;
 
     // 사용자 인증 절차 실행(암호 기반 시동)

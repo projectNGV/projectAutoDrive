@@ -35,29 +35,29 @@ void LKAS_UpdateSteerBuffer (int value)
     }
 }
 
-void LKAS_Start ()
+void LKAS_Start (void)
 {
     myPrintf("LKAS START\n");
     bufferLeft = 0;
     bufferRight = 0;
     g_lkasEnable = TRUE;
     unsigned char txData[8] = {1, 0, 0, 0, 0, 0, 0, 0};
-    canSendMsg(LKAS_START_CAN_ID, txData, 1);
+    canSendMsg(LKAS_START_CAN_ID, txData, 8);
     motorMoveForward(FORWARD_SPEED);
 
 }
 
-void LKAS_Stop ()
+void LKAS_Stop (void)
 {
     myPrintf("LKAS STOP\n");
     g_lkasEnable = FALSE;
     g_accEnable = false;
     unsigned char txData[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    canSendMsg(LKAS_START_CAN_ID, txData, 1);
+    canSendMsg(LKAS_START_CAN_ID, txData, 8);
     motorStop();
 }
 
-void LKAS_Main ()
+void LKAS_Main (void)
 {
     if (g_lkasEnable)
     {

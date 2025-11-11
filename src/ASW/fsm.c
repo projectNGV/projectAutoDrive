@@ -1,5 +1,6 @@
 #include "fsm.h"
 #include "lkas.h"
+#include "stm.h"
 
 // 외부에서 정의된 전역 변수: AEB(긴급 제동) 작동 여부 플래그
 // 장애물과의 거리가 10cm 이하일 때 true가 되며, 주행을 중단시킴
@@ -29,7 +30,7 @@ void handleStateMachine (MotorState *motorState)
     unsigned int distance = tofGetValue();  // 전방 거리(mm) 측정
     updateAebFlagByTof(distance);           // 거리에 따라 aebFlag 값을 true/false로 설정
 
-//    myPrintf("cur s: %d\n", currentState);
+    //myPrintf("currentState : %d, currentDuty : %d\n", currentState, motorState->currentDuty);
     // 현재 상태에 따라 동작 분기
     switch (currentState)
     {
@@ -40,8 +41,7 @@ void handleStateMachine (MotorState *motorState)
             if (aebFlag == true) { // aeb 발동 -> lkas 전용 정지 상태
                 LKAS_Stop();
                 performEmergencyStop();
-                //motorStopChA();
-                //motorStopChB();
+                //motorStop();
                 myPrintf("****LKAS & motor stop\n");
 
                 currentState = STATE_LKAS_STOPPED;
@@ -77,6 +77,8 @@ void handleStateMachine (MotorState *motorState)
 
         case STATE_LKAS_STOPPED:
         {
+            motorState->currentDuty = 0; // 속도를 0으로 초기화
+            motorStop();                 // 차량 완전 정지
             if (obstacleDetectedFlag == true) { // 타임아웃 이벤트 발생
                 myPrintf("---time out\nObstacle confirmed. Initiating Lane Change.\n");
                 currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 전이
@@ -90,7 +92,12 @@ void handleStateMachine (MotorState *motorState)
             myPrintf("changing lane----------delay\n\n");
 
             // 차선 변경 로직 짜야함
-            delayMs(5000);
+//            delayMs(5000);
+            moveForwardRight(400);
+            delayMs(2000);
+            moveForwardLeft(400);
+            delayMs(1000);
+
             aebFlag = false;
             obstacleDetectedFlag = false;
 
