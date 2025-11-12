@@ -14,7 +14,7 @@
 
 #define STM_CLOCK_HZ            100000000UL // 클럭 주파수 100MHz
 #define TICKS_PER_MS    (STM_CLOCK_HZ / 1000UL)
-#define AEB_TIMEOUT_MS 3000 // 타임아웃 시간 (ms)
+#define AEB_TIMEOUT_MS 2000 // 타임아웃 시간 (ms)
 #define AEB_TIMEOUT_TICKS (AEB_TIMEOUT_MS * TICKS_PER_MS)
 
 

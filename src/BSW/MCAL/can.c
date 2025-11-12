@@ -10,6 +10,7 @@ McmcanType g_mcmcan; /* Global MCMCAN configuration and control structure    */
 /*---------------------------------------------Function Implementations----------------------------------------------*/
 /*********************************************************************************************************************/
 
+extern volatile bool signsRed;
 
 /* Callback 함수 포인터 */
 static void (*tofCallback)(unsigned char *rxData) = 0;
@@ -48,6 +49,11 @@ void canRxIsrHandler (void)
         {
             int steer = rxData[0];
             LKAS_UpdateSteerBuffer(steer);
+            break;
+        }
+        case 0x0C7:
+        {
+            signsRed = true;
             break;
         }
         default :

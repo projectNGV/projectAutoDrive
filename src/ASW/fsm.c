@@ -15,7 +15,7 @@ VehicleState currentState = STATE_IDLE;
 
 extern volatile bool tofFlag;
 volatile bool obstacleDetectedFlag = false;
-
+volatile bool signsRed = false;
 
 /*********************************************************************************************************************/
 // 현재 상태에 따라 차량의 동작을 제어하는 상태 머신 처리 함수
@@ -30,6 +30,15 @@ void handleStateMachine (MotorState *motorState)
     unsigned int distance = tofGetValue();  // 전방 거리(mm) 측정
     updateAebFlagByTof(distance);           // 거리에 따라 aebFlag 값을 true/false로 설정
 
+    if (signsRed == true) {
+        // LKAS/ACC 주행 중이라면 중단합니다.
+        if (currentState == STATE_LKAS || currentState == STATE_LKAS_STOPPED || currentState == STATE_LANE_CHANGE) {
+            LKAS_Stop(); // LKAS 중단 (모터 정지 및 플래그 초기화)
+        }
+
+        currentState = STATE_GET_RIGHT_SIGNS;
+    }
+
     //myPrintf("currentState : %d, currentDuty : %d\n", currentState, motorState->currentDuty);
     // 현재 상태에 따라 동작 분기
     switch (currentState)
@@ -37,15 +46,13 @@ void handleStateMachine (MotorState *motorState)
 
         case STATE_LKAS :
         {
-            //myPrintf("tof: %d mm\n", distance);
             if (aebFlag == true) { // aeb 발동 -> lkas 전용 정지 상태
                 LKAS_Stop();
                 performEmergencyStop();
-                //motorStop();
-                myPrintf("****LKAS & motor stop\n");
 
                 currentState = STATE_LKAS_STOPPED;
                 stm0StartTimeout();
+                break;
             }
 
             // ToF 거리가 멀면 ACC 끄고 고정 속도 주행, 가까우면 ACC 켜고 거리 유지
@@ -63,25 +70,20 @@ void handleStateMachine (MotorState *motorState)
                 LKAS_Main();
             }
 
-
-////            else if (motorState->lastKeyInput == 'l') {
-////                LKAS_Stop();
-////                currentState = STATE_LKAS_STOPPED;
-////            }
-//            else {
-//                LKAS_Main();
-//            }
-
             break;
         }
 
         case STATE_LKAS_STOPPED:
         {
-            motorState->currentDuty = 0; // 속도를 0으로 초기화
-            motorStop();                 // 차량 완전 정지
+//            motorState->currentDuty = 0; // 속도를 0으로 초기화
+//            motorStop();                 // 차량 완전 정지
+            if (aebFlag == false) {
+                LKAS_Start();
+                currentState = STATE_LKAS;
+            }
+
             if (obstacleDetectedFlag == true) { // 타임아웃 이벤트 발생
-                myPrintf("---time out\nObstacle confirmed. Initiating Lane Change.\n");
-                currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 전이
+                currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 변경
             }
 
             break;
@@ -89,13 +91,17 @@ void handleStateMachine (MotorState *motorState)
 
         case STATE_LANE_CHANGE:
         {
-            myPrintf("changing lane----------delay\n\n");
-
-            // 차선 변경 로직 짜야함
-//            delayMs(5000);
-            moveForwardRight(400);
-            delayMs(2000);
-            moveForwardLeft(400);
+            moveForwardLeft(600);
+            delayMs(700);
+//            while (distance <= 250) {
+//                moveForwardLeft(600);
+//            }
+//            motorStop();
+//            moveForward(600);
+//            delayMs(50);
+            moveForwardRight(600);
+            delayMs(1400);
+            motorStop();
             delayMs(1000);
 
             aebFlag = false;
@@ -103,6 +109,31 @@ void handleStateMachine (MotorState *motorState)
 
             currentState = STATE_LKAS;
             LKAS_Start();
+
+            break;
+        }
+
+        case STATE_GET_RIGHT_SIGNS:
+        {
+            motorStop();
+            delayMs(100);
+
+            moveForwardRight(600);
+            delayMs(1000);
+
+            motorStop();
+            delayMs(500);
+
+            moveForward(600);
+            delayMs(2000);
+
+            motorStop();
+
+
+
+
+            signsRed = false;
+            currentState = STATE_IDLE;
 
             break;
         }

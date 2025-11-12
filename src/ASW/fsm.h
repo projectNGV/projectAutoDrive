@@ -12,7 +12,8 @@ typedef enum {
     STATE_AUTO_PARK,
     STATE_LKAS,
     STATE_LKAS_STOPPED,   // LKAS 중 AEB로 정지된 상태
-    STATE_LANE_CHANGE     // 장애물 회피 (차선 변경) 수행 상태
+    STATE_LANE_CHANGE,     // 장애물 회피 (차선 변경) 수행 상태
+    STATE_GET_RIGHT_SIGNS
 } VehicleState;
 
 void handleStateMachine(MotorState* motorState);

@@ -13,6 +13,7 @@
 #define STEER_OFFSET -200 // CAN에서 오는 건 0~400 우리가 원하는 건 -200 ~ 200
 
 #define LKAS_START_CAN_ID 0x210
+#define LKAS_STOP_CAN_ID 0x211
 
 boolean g_lkasEnable;
 
@@ -52,8 +53,8 @@ void LKAS_Stop (void)
     myPrintf("LKAS STOP\n");
     g_lkasEnable = FALSE;
     g_accEnable = false;
-    unsigned char txData[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    canSendMsg(LKAS_START_CAN_ID, txData, 8);
+    unsigned char txData[8] = {1, 0, 0, 0, 0, 0, 0, 0};
+    canSendMsg(LKAS_STOP_CAN_ID, txData, 8);
     motorStop();
 }
 
@@ -139,24 +140,26 @@ void ACC_LKAS_Main(unsigned int distance){ // ACC + LKAS
 
     motorState.currentDuty = currentDuty; // 새로운 속도 저장
 
-    // 2. LKAS 조향 제어 로직
-    if (bufferLeft != bufferRight) {
-        int latestIdx = bufferRight - 1;
-        if (latestIdx < 0)
-            latestIdx += BUFFER_SIZE;
+    LKAS_Main();
 
-        int latestRaw = steerBuffer[latestIdx];
-        bufferLeft = bufferRight; // 버퍼 리셋
-
-        steer_mv = (latestRaw * STEER_FACTOR) + STEER_OFFSET;
-        if (steer_mv < 20 && steer_mv > -20)
-            steer_mv = 0;
-    }
-
-    // 최종 모터 실행 (ACC 속도 + LKAS 조향 통합)
-    // 조향 값(steer_mv)을 현재 속도(currentDuty)에 적용
-    motorMovChAPwm(currentDuty - steer_mv, Forward); // 좌측 채널
-    motorMovChBPwm(currentDuty + steer_mv, Forward); // 우측 채널
+//    // 2. LKAS 조향 제어 로직
+//    if (bufferLeft != bufferRight) {
+//        int latestIdx = bufferRight - 1;
+//        if (latestIdx < 0)
+//            latestIdx += BUFFER_SIZE;
+//
+//        int latestRaw = steerBuffer[latestIdx];
+//        bufferLeft = bufferRight; // 버퍼 리셋
+//
+//        steer_mv = (latestRaw * STEER_FACTOR) + STEER_OFFSET;
+//        if (steer_mv < 20 && steer_mv > -20)
+//            steer_mv = 0;
+//    }
+//
+//    // 최종 모터 실행 (ACC 속도 + LKAS 조향 통합)
+//    // 조향 값(steer_mv)을 현재 속도(currentDuty)에 적용
+//    motorMovChAPwm(currentDuty - steer_mv, Forward); // 좌측 채널
+//    motorMovChBPwm(currentDuty + steer_mv, Forward); // 우측 채널
 }
 
 

@@ -1,12 +1,12 @@
 #include "stm.h"
 #include "fsm.h"
 
-//extern volatile bool aebFlag;
+extern volatile bool aebFlag;
 extern volatile bool obstacleDetectedFlag;
 
 IFX_INTERRUPT(stm0IsrHandler, 0, ISR_PRIORITY_STM0);
 void stm0IsrHandler(){
-    //if(aebFlag == true)
+    if(aebFlag == true)
         obstacleDetectedFlag = true;
     MODULE_STM0.ICR.B.CMP0EN = 0; // CMP0 Interrupt disable
     MODULE_STM0.ISCR.B.CMP0IRR = 1U; // clear CMP0 Interrupt Flag
