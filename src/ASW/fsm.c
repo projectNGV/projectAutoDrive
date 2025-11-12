@@ -17,6 +17,8 @@ extern volatile bool tofFlag;
 volatile bool obstacleDetectedFlag = false;
 volatile bool signsRed = false;
 
+volatile bool checkAeb = false;
+
 /*********************************************************************************************************************/
 // 현재 상태에 따라 차량의 동작을 제어하는 상태 머신 처리 함수
 // ────────────────────────────────────────────────
@@ -82,8 +84,16 @@ void handleStateMachine (MotorState *motorState)
                 currentState = STATE_LKAS;
             }
 
-            if (obstacleDetectedFlag == true) { // 타임아웃 이벤트 발생
-                currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 변경
+            if (checkAeb == false) {
+                if (obstacleDetectedFlag == true) { // 타임아웃 이벤트 발생
+                    checkAeb = true;
+                    currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 변경
+                }
+            }
+            else {
+                motorState->currentDuty = 0;
+                motorStop();
+                //LKAS_Stop();
             }
 
             break;
@@ -119,21 +129,12 @@ void handleStateMachine (MotorState *motorState)
             delayMs(100);
 
             moveForwardRight(600);
-            delayMs(1000);
+            delayMs(1200);
 
-            motorStop();
-            delayMs(500);
-
-            moveForward(600);
-            delayMs(2000);
-
-            motorStop();
-
-
-
+            LKAS_Start();
 
             signsRed = false;
-            currentState = STATE_IDLE;
+            currentState = STATE_LKAS;
 
             break;
         }

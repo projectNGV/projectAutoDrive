@@ -55,6 +55,7 @@ void LKAS_Stop (void)
     g_accEnable = false;
     unsigned char txData[8] = {1, 0, 0, 0, 0, 0, 0, 0};
     canSendMsg(LKAS_STOP_CAN_ID, txData, 8);
+    motorState.currentDuty = 0;
     motorStop();
 }
 
