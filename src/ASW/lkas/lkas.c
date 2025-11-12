@@ -13,6 +13,8 @@
 #define STEER_OFFSET -200 // CAN에서 오는 건 0~400 우리가 원하는 건 -200 ~ 200
 
 #define LKAS_START_CAN_ID 0x210
+#define LKAS_START_CAN_ID 0x211
+
 
 boolean g_lkasEnable;
 
@@ -52,7 +54,7 @@ void LKAS_Stop (void)
     myPrintf("LKAS STOP\n");
     g_lkasEnable = FALSE;
     g_accEnable = false;
-    unsigned char txData[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned char txData[8] = {1, 0, 0, 0, 0, 0, 0, 0};
     canSendMsg(LKAS_START_CAN_ID, txData, 8);
     motorStop();
 }

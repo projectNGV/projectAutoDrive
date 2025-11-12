@@ -46,10 +46,11 @@ void handleStateMachine (MotorState *motorState)
 
                 currentState = STATE_LKAS_STOPPED;
                 stm0StartTimeout();
+                break;
             }
 
             // ToF 거리가 멀면 ACC 끄고 고정 속도 주행, 가까우면 ACC 켜고 거리 유지
-            if (distance < ACC_DEACTIVATION_THRESHOLD) {
+            if (distance <= ACC_DEACTIVATION_THRESHOLD) {
                 g_accEnable = TRUE;
             }
             else if (distance > ACC_ACTIVATION_THRESHOLD) {
@@ -63,22 +64,13 @@ void handleStateMachine (MotorState *motorState)
                 LKAS_Main();
             }
 
-
-////            else if (motorState->lastKeyInput == 'l') {
-////                LKAS_Stop();
-////                currentState = STATE_LKAS_STOPPED;
-////            }
-//            else {
-//                LKAS_Main();
-//            }
-
             break;
         }
 
         case STATE_LKAS_STOPPED:
         {
-            motorState->currentDuty = 0; // 속도를 0으로 초기화
-            motorStop();                 // 차량 완전 정지
+//            motorState->currentDuty = 0; // 속도를 0으로 초기화
+//            motorStop();                 // 차량 완전 정지
             if (obstacleDetectedFlag == true) { // 타임아웃 이벤트 발생
                 myPrintf("---time out\nObstacle confirmed. Initiating Lane Change.\n");
                 currentState = STATE_LANE_CHANGE; // 차선 변경 상태로 전이
@@ -99,6 +91,7 @@ void handleStateMachine (MotorState *motorState)
             delayMs(1000);
 
             aebFlag = false;
+            delayMs(1000);
             obstacleDetectedFlag = false;
 
             currentState = STATE_LKAS;
